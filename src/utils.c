@@ -47,8 +47,8 @@ unsigned char* render_frame(Creact* creact) {
     custom_mouse_pressed = (custom_mouse_down && !previous_mouse_down);
     custom_mouse_released = (!custom_mouse_down && previous_mouse_down);
     previous_mouse_down = custom_mouse_down;
-    UnloadImage(creact->currentFrame);
 
+    UnloadImage(creact->currentFrame);
 
     BeginTextureMode(creact->target);
 
