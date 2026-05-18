@@ -1,5 +1,6 @@
 #include "../include/utils.h"
 #include <stdio.h>
+#include "string.h"
 // ==========================================
 // L'ÉQUIVALENT DU "useState" DE REACT EN C
 // On utilise "static" pour que ces variables
@@ -12,11 +13,12 @@ static bool showLogoutModal = false;
 static char searchBox[64] = "Rechercher...";
 static bool searchBoxEditMode = false;
 
-void creactApp() {
+
+void creactApp(Creact* creact) {
     // On récupère la taille dynamique de ton canvas généré par le JS !
     int w = GetScreenWidth();
     int h = GetScreenHeight();
-    printf("[DEBUG] search : %s\n", searchBox);
+    printf("[DEBUG] search : %s\n", creact->serverData);
 
     // 1. FOND DE LA PAGE
     ClearBackground(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));
@@ -28,13 +30,13 @@ void creactApp() {
     GuiLabel((Rectangle){ 20, 15, 200, 30 }, "#198# CREACT.JS ADMIN");
 
     // Barre de recherche centrée
-    if (GuiTextBox((Rectangle){ w / 2 - 150, 15, 300, 30 }, searchBox, 64, searchBoxEditMode)) {
+    if (GuiTextBox((Rectangle){ w / 2 - 150, 15, 300, 30 }, creact->serverData, 64, searchBoxEditMode)) {
         searchBoxEditMode = !searchBoxEditMode;
     }
 
     // Bouton de déconnexion à droite
     if (GuiButton((Rectangle){ w - 120, 15, 100, 30 }, "#159# Logout")) {
-        showLogoutModal = true;
+        testApi(creact);
     }
 
     // ==========================================

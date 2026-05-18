@@ -20,16 +20,22 @@ bool CustomIsMouseButtonReleased(int button);
 #define IsMouseButtonPressed CustomIsMouseButtonPressed
 #define IsMouseButtonReleased CustomIsMouseButtonReleased
 
-#include "raygui.h"
+#include "../lib/raylib-6.0_webassembly/include/raygui.h"
 
 #include <emscripten.h>
+#include <emscripten/fetch.h>
+
+#define BUFFER_SIZE 256
 
 typedef struct Creact {
 
     RenderTexture2D target;
     Image currentFrame;
+    bool isDownloading;
+    char serverData[BUFFER_SIZE];
 
 } Creact;
+
 
 EMSCRIPTEN_KEEPALIVE
 void update_mouse(int x, int y, int is_down);
@@ -51,4 +57,5 @@ EMSCRIPTEN_KEEPALIVE
 void destroyCreact(Creact* creact);
 
 
-void creactApp();
+void creactApp(Creact* creact);
+void testApi(Creact* creact);

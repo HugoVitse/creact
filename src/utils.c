@@ -33,7 +33,9 @@ void resize_frame(int width, int height, Creact* creact) {
 EMSCRIPTEN_KEEPALIVE
 Creact* initCreact() {
     Creact* creact = calloc(1,sizeof(Creact));
-    if(creact) return creact;
+    if(creact) {
+        return creact;
+    }
     else return NULL;
 }
 
@@ -52,11 +54,51 @@ unsigned char* render_frame(Creact* creact) {
 
     BeginTextureMode(creact->target);
 
-    creactApp();
+    creactApp(creact);
 
     EndTextureMode();
 
     creact->currentFrame = LoadImageFromTexture(creact->target.texture);
 
     return (unsigned char*)creact->currentFrame.data;
+}
+
+void downloadSucceeded(emscripten_fetch_t *fetch) {
+    Creact* creact = (Creact*)fetch->userData;
+    snprintf(creact->serverData, sizeof(creact->serverData), "%.*s", (int)fetch->numBytes, fetch->data);
+    creact->isDownloading = false;
+    EM_ASM({
+            if (window.wakeUpCreact) {
+                window.wakeUpCreact();
+            }
+        });
+    emscripten_fetch_close(fetch);
+}
+
+void downloadFailed(emscripten_fetch_t *fetch) {
+    Creact* creact = (Creact*)fetch->userData;
+    snprintf(creact->serverData, sizeof(creact->serverData), "Erreur HTTP : %d", fetch->status);
+    creact->isDownloading = false;
+    EM_ASM({
+            if (window.wakeUpCreact) {
+                window.wakeUpCreact();
+            }
+        });
+    emscripten_fetch_close(fetch);
+}
+
+void testApi(Creact* creact) {
+    if (creact->isDownloading) return;
+    creact->isDownloading = true;
+
+    emscripten_fetch_attr_t attr;
+    emscripten_fetch_attr_init(&attr);
+
+    strcpy(attr.requestMethod, "GET");
+    attr.attributes = EMSCRIPTEN_FETCH_LOAD_TO_MEMORY;
+    attr.userData = creact;
+    attr.onsuccess = downloadSucceeded;
+    attr.onerror = downloadFailed;
+
+    emscripten_fetch(&attr, "http://localhost:8080/verb");
 }

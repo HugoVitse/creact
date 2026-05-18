@@ -85,6 +85,10 @@ window.Module.onRuntimeInitialized = () => {
     Module._destroyCreact(Creact);
   });
 
+  window.wakeUpCreact = () => {
+    framesToRender = 2; // On relance la machine !
+  };
+
   // render loop
   function updateCanvas() {
     if (framesToRender > 0) {
