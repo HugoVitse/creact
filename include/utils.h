@@ -36,6 +36,11 @@ typedef struct Creact {
 
 } Creact;
 
+typedef struct requestStruct {
+    Creact* creact;
+    char* response;
+} requestStruct;
+
 
 EMSCRIPTEN_KEEPALIVE
 void update_mouse(int x, int y, int is_down);
@@ -58,4 +63,5 @@ void destroyCreact(Creact* creact);
 
 
 void creactApp(Creact* creact);
-void testApi(Creact* creact);
+void get(Creact* creact, char* url, char* response);
+void post(Creact* creact, char* url, char* postData, char response[BUFFER_SIZE]);

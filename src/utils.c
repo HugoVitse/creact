@@ -64,30 +64,38 @@ unsigned char* render_frame(Creact* creact) {
 }
 
 void downloadSucceeded(emscripten_fetch_t *fetch) {
-    Creact* creact = (Creact*)fetch->userData;
-    snprintf(creact->serverData, sizeof(creact->serverData), "%.*s", (int)fetch->numBytes, fetch->data);
-    creact->isDownloading = false;
+    requestStruct* req = (requestStruct*)fetch->userData;
+    snprintf(req->response, BUFFER_SIZE, "%.*s", (int)fetch->numBytes, fetch->data);
+    req->creact->isDownloading = false;
     EM_ASM({
             if (window.wakeUpCreact) {
                 window.wakeUpCreact();
             }
         });
+    free(req);
     emscripten_fetch_close(fetch);
 }
 
 void downloadFailed(emscripten_fetch_t *fetch) {
-    Creact* creact = (Creact*)fetch->userData;
-    snprintf(creact->serverData, sizeof(creact->serverData), "Erreur HTTP : %d", fetch->status);
-    creact->isDownloading = false;
+    requestStruct* req = (requestStruct*)fetch->userData;
+    snprintf(req->response, BUFFER_SIZE, "Erreur HTTP : %d", fetch->status);
+    req->creact->isDownloading = false;
     EM_ASM({
             if (window.wakeUpCreact) {
                 window.wakeUpCreact();
             }
         });
+    free(req);
     emscripten_fetch_close(fetch);
 }
 
-void testApi(Creact* creact) {
+void get(Creact* creact, char* url, char response[BUFFER_SIZE]){
+
+    requestStruct* req = (requestStruct*)malloc(sizeof(requestStruct));
+    req->creact = creact;
+    req->response = response;
+    if (req == NULL) return;
+
     if (creact->isDownloading) return;
     creact->isDownloading = true;
 
@@ -96,9 +104,41 @@ void testApi(Creact* creact) {
 
     strcpy(attr.requestMethod, "GET");
     attr.attributes = EMSCRIPTEN_FETCH_LOAD_TO_MEMORY;
-    attr.userData = creact;
+    attr.userData = req;
     attr.onsuccess = downloadSucceeded;
     attr.onerror = downloadFailed;
 
-    emscripten_fetch(&attr, "http://localhost:8080/verb");
+    emscripten_fetch(&attr, url);
+}
+
+
+void post(Creact* creact, char* url, char* postData, char response[BUFFER_SIZE]){
+
+    if (creact->isDownloading) return;
+
+    requestStruct* req = (requestStruct*)malloc(sizeof(requestStruct));
+    if (req == NULL) return;
+
+    req->creact = creact;
+    req->response = response;
+
+    creact->isDownloading = true;
+
+    emscripten_fetch_attr_t attr;
+    emscripten_fetch_attr_init(&attr);
+
+    strcpy(attr.requestMethod, "POST");
+    attr.attributes = EMSCRIPTEN_FETCH_LOAD_TO_MEMORY;
+
+    const char* headers[] = {"Content-Type", "application/x-www-form-urlencoded", NULL};
+    attr.requestHeaders = headers;
+
+    attr.requestData = postData;
+    attr.requestDataSize = strlen(postData);
+
+    attr.userData = req;
+    attr.onsuccess = downloadSucceeded;
+    attr.onerror = downloadFailed;
+
+    emscripten_fetch(&attr, url);
 }
