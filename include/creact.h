@@ -1,7 +1,5 @@
 #pragma once
-
-#include "../lib/raylib-6.0_webassembly/include/raylib.h"
-#include "stdlib.h"
+#include "raylib.h"
 
 static int custom_mouse_x = 0;
 static int custom_mouse_y = 0;
@@ -20,12 +18,14 @@ bool CustomIsMouseButtonReleased(int button);
 #define IsMouseButtonPressed CustomIsMouseButtonPressed
 #define IsMouseButtonReleased CustomIsMouseButtonReleased
 
-#include "../lib/raylib-6.0_webassembly/include/raygui.h"
+#include "raygui.h"
 
 #include <emscripten.h>
 #include <emscripten/fetch.h>
 
 #define BUFFER_SIZE 256
+
+typedef struct Globals Globals ;
 
 typedef struct Creact {
 
@@ -34,11 +34,15 @@ typedef struct Creact {
     bool isDownloading;
     char serverData[BUFFER_SIZE];
 
+    bool initGlobals;
+    Globals* globals;
 } Creact;
 
 typedef struct requestStruct {
     Creact* creact;
     char* response;
+    void (*callback)(Creact*);
+
 } requestStruct;
 
 
@@ -63,5 +67,5 @@ void destroyCreact(Creact* creact);
 
 
 void creactApp(Creact* creact);
-void get(Creact* creact, char* url, char* response);
-void post(Creact* creact, char* url, char* postData, char response[BUFFER_SIZE]);
+void get(Creact* creact, char* url, char* response, void (*callback)(Creact*));
+void post(Creact* creact, char* url, char* postData, char response[BUFFER_SIZE], void (*callback)(Creact*));

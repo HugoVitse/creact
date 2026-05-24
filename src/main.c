@@ -1,4 +1,4 @@
-#include "../include/creact.h"
+#include "creact.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -13,8 +13,23 @@ static bool searchBoxEditMode = false;
 char serverData[BUFFER_SIZE];
 char* postdata = "";
 
+
+typedef struct Globals {
+
+    int x;
+
+} Globals;
+
+
+
 void creactApp(Creact* creact) {
     // On récupère la taille dynamique de ton canvas généré par le JS !
+    if(creact->initGlobals == false){
+        creact->globals = malloc(sizeof(Globals));
+        creact->initGlobals = true;
+    }
+
+    creact->globals->x = 1;
     int w = GetScreenWidth();
     int h = GetScreenHeight();
     printf("[DEBUG] search : %s\n", serverData);
@@ -35,7 +50,7 @@ void creactApp(Creact* creact) {
 
     // Bouton de déconnexion à droite
     if (GuiButton((Rectangle){ w - 120, 15, 100, 30 }, "#159# Logout")) {
-        post(creact, "http://localhost:8080/verb", postdata, serverData);
+        post(creact, "http://localhost:8080/verb", postdata, serverData,NULL);
     }
 
     // ==========================================

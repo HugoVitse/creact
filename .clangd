@@ -1,4 +1,0 @@
-CompileFlags:
-  Add: 
-    - "-I/home/hugo/.cache/emscripten/sysroot/include"
-    - "-I./lib/raylib-6.0_webassembly/include"

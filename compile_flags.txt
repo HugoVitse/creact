@@ -1,0 +1,5 @@
+-Iinclude
+-Ilib/include
+-I./include
+-I./lib/include
+-I/home/hugo/.cache/emscripten/sysroot/include

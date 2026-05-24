@@ -1,5 +1,5 @@
 #define RAYGUI_IMPLEMENTATION
-#include "../include/creact.h"
+#include "creact.h"
 
 Vector2 CustomGetMousePosition(void) { return (Vector2){ (float)custom_mouse_x, (float)custom_mouse_y }; }
 bool CustomIsMouseButtonDown(int button) { return (button == MOUSE_BUTTON_LEFT) && custom_mouse_down; }
@@ -34,6 +34,8 @@ EMSCRIPTEN_KEEPALIVE
 Creact* initCreact() {
     Creact* creact = calloc(1,sizeof(Creact));
     if(creact) {
+        creact->globals = NULL;
+        creact->initGlobals = false;
         return creact;
     }
     else return NULL;
@@ -72,6 +74,7 @@ void downloadSucceeded(emscripten_fetch_t *fetch) {
                 window.wakeUpCreact();
             }
         });
+    if(req->callback) req->callback(req->creact);
     free(req);
     emscripten_fetch_close(fetch);
 }
@@ -85,15 +88,18 @@ void downloadFailed(emscripten_fetch_t *fetch) {
                 window.wakeUpCreact();
             }
         });
+    if(req->callback) req->callback(req->creact);
     free(req);
     emscripten_fetch_close(fetch);
 }
 
-void get(Creact* creact, char* url, char response[BUFFER_SIZE]){
+void get(Creact* creact, char* url, char response[BUFFER_SIZE], void (*callback)(Creact*)){
 
     requestStruct* req = (requestStruct*)malloc(sizeof(requestStruct));
     req->creact = creact;
     req->response = response;
+    req->callback = callback;
+
     if (req == NULL) return;
 
     if (creact->isDownloading) return;
@@ -112,7 +118,7 @@ void get(Creact* creact, char* url, char response[BUFFER_SIZE]){
 }
 
 
-void post(Creact* creact, char* url, char* postData, char response[BUFFER_SIZE]){
+void post(Creact* creact, char* url, char* postData, char response[BUFFER_SIZE], void (*callback)(Creact*)){
 
     if (creact->isDownloading) return;
 
@@ -121,6 +127,7 @@ void post(Creact* creact, char* url, char* postData, char response[BUFFER_SIZE])
 
     req->creact = creact;
     req->response = response;
+    req->callback = callback;
 
     creact->isDownloading = true;
 
