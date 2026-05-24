@@ -1,0 +1,57 @@
+name: Build Creact Library
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-wasm:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Emscripten
+        uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: latest
+
+      - name: Build and Package
+        run: |
+          mkdir -p build/lib
+          mkdir -p build/tmp
+
+          mkdir -p myApp/lib/lib
+          mkdir -p myApp/lib/include
+
+          emcc -c src/creact.c -I./lib/include -I./include
+          mv *.o build/tmp/
+
+          emar rcs build/lib/libcreact.a build/tmp/creact.o
+          rm -r build/tmp
+
+          cp build/lib/libcreact.a myApp/lib/lib/libcreact.a
+          cp include/creact.h myApp/lib/include/creact.h
+
+          cp -r lib/include/* myApp/lib/include/ 2>/dev/null || true
+          cp -r lib/lib/* myApp/lib/lib/ 2>/dev/null || true
+
+          zip -r creact.zip myApp
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          name: Release ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          files: |
+            creact.zip
+            build/lib/libcreact.a
+            include/creact.h
