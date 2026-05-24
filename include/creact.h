@@ -1,6 +1,6 @@
 #pragma once
 
-#include "raylib.h"
+#include "../lib/raylib-6.0_webassembly/include/raylib.h"
 #include "stdlib.h"
 
 static int custom_mouse_x = 0;
