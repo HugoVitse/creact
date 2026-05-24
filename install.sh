@@ -1,4 +1,4 @@
-URL=https://raw.githubusercontent.com/HugoVitse/creact/refs/heads/master/creact.zip
+URL="https://github.com/HugoVitse/creact/releases/latest/download/creact.zip"
 
 rm creact.zip
 wget $URL
