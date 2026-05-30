@@ -27,6 +27,14 @@ present frames on a browser canvas and forward input events.
 - static/index.html: minimal HTML loader
 - myApp/: example application using the library
 
+## Prerequisites
+
+Emscripten is required to build the WebAssembly targets. Follow the official
+installation guide for your platform:
+
+- https://emscripten.org/docs/getting_started/downloads.html
+- https://emscripten.org/docs/getting_started/
+
 ## Build
 
 Build the main demo in the repository root:
