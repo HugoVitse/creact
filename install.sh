@@ -3,6 +3,7 @@ set -euo pipefail
 
 URL="https://github.com/HugoVitse/creact/releases/latest/download/creact.zip"
 ZIP_NAME="creact.zip"
+TARGET_DIR=""
 
 if [ -t 1 ]; then
 	RED="\033[31m"
@@ -41,6 +42,27 @@ die() {
 	exit 1
 }
 
+usage() {
+	log "Usage: $0 [-d|--dir <folder>]"
+}
+
+while [[ $# -gt 0 ]]; do
+	case "$1" in
+		-d|--dir)
+			[[ $# -ge 2 ]] || die "Missing value for $1"
+			TARGET_DIR="$2"
+			shift 2
+			;;
+		-h|--help)
+			usage
+			exit 0
+			;;
+		*)
+			die "Unknown option: $1"
+			;;
+	esac
+done
+
 if ! command -v unzip >/dev/null 2>&1; then
 	die "unzip is required. Please install it and retry."
 fi
@@ -66,9 +88,25 @@ log "${GREEN}Progress:${RESET} [#####-----] 50%"
 log "${BLUE}Extracting:${RESET} $ZIP_NAME"
 unzip -o "$ZIP_NAME"
 
+if [[ -n "$TARGET_DIR" ]]; then
+	if [[ -e "$TARGET_DIR" ]]; then
+		die "Target directory already exists: $TARGET_DIR"
+	fi
+	mkdir -p "$TARGET_DIR"
+	shopt -s dotglob nullglob
+	mv myApp/* "$TARGET_DIR"/
+	shopt -u dotglob nullglob
+	rm -rf myApp
+	rm "$ZIP_NAME"
+fi
+
 log "${GREEN}[2/2] Extracted.${RESET}"
 log "${GREEN}Progress:${RESET} [##########] 100%"
 log ""
 pad
 log "${GREEN}All set!${RESET}"
-log "Next: cd myApp && make -b"
+if [[ -n "$TARGET_DIR" ]]; then
+	log "Next: cd $TARGET_DIR && make -b"
+else
+	log "Next: cd myApp && make -b"
+fi
